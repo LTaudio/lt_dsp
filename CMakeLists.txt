@@ -91,4 +91,5 @@ if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
             lt::CompilerOptions
             lt::CodeCoverage
     )
+
 endif()
