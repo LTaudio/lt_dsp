@@ -21,7 +21,6 @@ coverage:
 	cmake -S . -G Ninja -B cmake-build-coverage -D CMAKE_BUILD_TYPE=Debug -D LT_BUILD_COVERAGE=TRUE
 	cmake --build cmake-build-coverage
 	cd cmake-build-coverage && ctest
-	# ./scripts/linux-pluginval.sh cmake-build-coverage "Stash"
 
 .PHONY: coverage-html
 coverage-html: coverage

@@ -46,8 +46,8 @@ TEMPLATE_TEST_CASE("dsp/container: CircularBuffer", "[dsp][container]", short, u
         REQUIRE(*(f++) == T{5});
         REQUIRE(f == l);
 
-        auto cf = std::cbegin(cb);
-        auto cl = std::cend(cb);
+        auto cf = cb.cbegin();
+        auto cl = cb.cend();
         REQUIRE(cf != cl);
         REQUIRE(*(cf++) == T{3});
         REQUIRE(*(cf++) == T{4});

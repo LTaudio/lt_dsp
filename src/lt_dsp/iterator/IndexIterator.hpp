@@ -98,58 +98,58 @@ auto operator==(IndexIterator<Container, IsConst> const& lhs, IndexIterator<Cont
 
 {
     return lhs.index() == rhs.index();
-};
+}
 
 template<typename Container, bool IsConst>
 auto operator!=(IndexIterator<Container, IsConst> const& lhs, IndexIterator<Container, IsConst> const& rhs) -> bool
 {
     return !(lhs == rhs);
-};
+}
 
 template<typename Container, bool IsConst>
 auto operator<(IndexIterator<Container, IsConst> const& lhs, IndexIterator<Container, IsConst> const& rhs) -> bool
 {
     return lhs.index() < rhs.index();
-};
+}
 
 template<typename Container, bool IsConst>
 auto operator<=(IndexIterator<Container, IsConst> const& lhs, IndexIterator<Container, IsConst> const& rhs) -> bool
 {
     return lhs.index() <= rhs.index();
-};
+}
 
 template<typename Container, bool IsConst>
 auto operator>(IndexIterator<Container, IsConst> const& lhs, IndexIterator<Container, IsConst> const& rhs) -> bool
 {
     return lhs.index() > rhs.index();
-};
+}
 
 template<typename Container, bool IsConst>
 auto operator>=(IndexIterator<Container, IsConst> const& lhs, IndexIterator<Container, IsConst> const& rhs) -> bool
 {
     return lhs.index() >= rhs.index();
-};
+}
 
 template<typename Container, bool IsConst>
 auto operator-(IndexIterator<Container, IsConst> const& lhs, IndexIterator<Container, IsConst> const& rhs) ->
     typename IndexIterator<Container, IsConst>::difference_type
 {
     return lhs.index() - rhs.index();
-};
+}
 
 template<typename Container, bool IsConst>
 auto operator-(IndexIterator<Container, IsConst> it, typename IndexIterator<Container, IsConst>::difference_type n)
     -> IndexIterator<Container, IsConst>
 {
     return {it.container(), it.index() - static_cast<typename IndexIterator<Container, IsConst>::index_type>(n)};
-};
+}
 
 template<typename Container, bool IsConst>
 auto operator+(IndexIterator<Container, IsConst> it, typename IndexIterator<Container, IsConst>::difference_type n)
     -> IndexIterator<Container, IsConst>
 {
     return {it.container(), it.index() + static_cast<typename IndexIterator<Container, IsConst>::index_type>(n)};
-};
+}
 
 template<typename Container, bool IsConst>
 auto operator-=(IndexIterator<Container, IsConst>& it, typename IndexIterator<Container, IsConst>::difference_type n)
@@ -158,7 +158,7 @@ auto operator-=(IndexIterator<Container, IsConst>& it, typename IndexIterator<Co
     auto tmp = it - n;
     it       = tmp;
     return it;
-};
+}
 
 template<typename Container, bool IsConst>
 auto operator+=(IndexIterator<Container, IsConst>& it, typename IndexIterator<Container, IsConst>::difference_type n)
@@ -167,6 +167,6 @@ auto operator+=(IndexIterator<Container, IsConst>& it, typename IndexIterator<Co
     auto tmp = it + n;
     it       = tmp;
     return it;
-};
+}
 
 }  // namespace lt

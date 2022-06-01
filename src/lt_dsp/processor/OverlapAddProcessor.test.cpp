@@ -29,7 +29,7 @@ TEST_CASE("dsp/processor: OverlapAddProcessor", "[dsp][processor]")
 
     for (auto i{0U}; i < samples.size(); i += audioBlockSize)
     {
-        auto ptr = std::next(std::begin(samples), i);
+        auto* ptr = std::next(std::begin(samples), i);
         proc.process(ptr, audioBlockSize);
     }
 
