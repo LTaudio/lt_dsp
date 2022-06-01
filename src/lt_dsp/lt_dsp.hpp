@@ -21,6 +21,8 @@
 #include <juce_data_structures/juce_data_structures.h>
 #include <juce_dsp/juce_dsp.h>
 
+// clang-format off
 #include "iterator/IndexIterator.hpp"
-
 #include "container/CircularBuffer.hpp"
+#include "processor/OverlapAddProcessor.hpp"
+// clang-format on

@@ -65,10 +65,11 @@ if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 
     target_sources(${PROJECT_NAME}_tests
         PRIVATE
-            src/Main.test.cpp
+            "src/Main.test.cpp"
 
-            src/lt_dsp/container/CircularBuffer.test.cpp
-            src/lt_dsp/iterator/IndexIterator.test.cpp
+            "src/lt_dsp/container/CircularBuffer.test.cpp"
+            "src/lt_dsp/iterator/IndexIterator.test.cpp"
+            "src/lt_dsp/processor/OverlapAddProcessor.test.cpp"
 
     )
 
