@@ -2,23 +2,43 @@
 
 #include "catch2/catch_test_macros.hpp"
 
+struct TestProcessor
+{
+    auto prepare(juce::dsp::ProcessSpec const& s) -> void { spec = s; }
+
+    template<typename ProcessContext>
+    auto process(ProcessContext const& context) -> void
+    {
+        auto&& inBlock  = context.getInputBlock();
+        auto&& outBlock = context.getOutputBlock();
+
+        REQUIRE(inBlock.getNumChannels() == 1);
+        REQUIRE(inBlock.getNumChannels() == outBlock.getNumChannels());
+        REQUIRE(inBlock.getNumSamples() == outBlock.getNumSamples());
+
+        auto buffer         = std::vector<float>{};
+        auto const* samples = inBlock.getChannelPointer(0);
+        std::copy(samples, samples + inBlock.getNumSamples(), std::back_inserter(buffer));
+
+        if (invocations == 0) { REQUIRE(buffer == std::vector<float>{0, 0, 0, 0, 0, 0, 1, 2}); }
+        if (invocations == 1) { REQUIRE(buffer == std::vector<float>{0, 0, 0, 0, 1, 2, 3, 4}); }
+        if (invocations == 2) { REQUIRE(buffer == std::vector<float>{0, 0, 1, 2, 3, 4, 5, 6}); }
+        if (invocations == 3) { REQUIRE(buffer == std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8}); }
+        if (invocations == 4) { REQUIRE(buffer == std::vector<float>{3, 4, 5, 6, 7, 8, 9, 10}); }
+        if (invocations == 5) { REQUIRE(buffer == std::vector<float>{5, 6, 7, 8, 9, 10, 11, 12}); }
+        ++invocations;
+
+        if (ProcessContext::usesSeparateInputAndOutputBlocks()) { outBlock.copyFrom(inBlock); }
+    }
+
+    auto reset() -> void {}
+
+    int invocations{0};
+    juce::dsp::ProcessSpec spec{};
+};
+
 TEST_CASE("dsp/processor: OverlapAddProcessor", "[dsp][processor]")
 {
-    struct TestProcessor
-    {
-        auto process(std::vector<float>& buffer)
-        {
-            if (invocations == 0) { REQUIRE(buffer == std::vector<float>{0, 0, 0, 0, 0, 0, 1, 2}); }
-            if (invocations == 1) { REQUIRE(buffer == std::vector<float>{0, 0, 0, 0, 1, 2, 3, 4}); }
-            if (invocations == 2) { REQUIRE(buffer == std::vector<float>{0, 0, 1, 2, 3, 4, 5, 6}); }
-            if (invocations == 3) { REQUIRE(buffer == std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8}); }
-            if (invocations == 4) { REQUIRE(buffer == std::vector<float>{3, 4, 5, 6, 7, 8, 9, 10}); }
-            if (invocations == 5) { REQUIRE(buffer == std::vector<float>{5, 6, 7, 8, 9, 10, 11, 12}); }
-            ++invocations;
-        }
-
-        int invocations{0};
-    };
 
     static constexpr auto const windowSize     = 8U;
     static constexpr auto const hopSize        = 2U;
@@ -26,11 +46,16 @@ TEST_CASE("dsp/processor: OverlapAddProcessor", "[dsp][processor]")
 
     auto proc    = lt::OverlapAddProcessor<TestProcessor>{windowSize, hopSize};
     auto samples = std::array<float, 12>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    auto buffer  = juce::AudioBuffer<float>{1, std::size(samples)};
+    std::copy(std::cbegin(samples), std::cend(samples), buffer.getWritePointer(0));
+
+    auto block = juce::dsp::AudioBlock<float>{buffer};
 
     for (auto i{0U}; i < samples.size(); i += audioBlockSize)
     {
-        auto* ptr = std::next(std::begin(samples), i);
-        proc.process(ptr, audioBlockSize);
+        auto subBlock = block.getSubBlock(i, audioBlockSize);
+        auto ctx      = juce::dsp::ProcessContextReplacing{subBlock};
+        proc.process(ctx);
     }
 
     SUCCEED();
