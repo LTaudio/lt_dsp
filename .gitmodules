@@ -7,3 +7,6 @@
 [submodule "3rd_party/concurrentqueue"]
 	path = 3rd_party/concurrentqueue
 	url = https://github.com/cameron314/concurrentqueue
+[submodule "3rd_party/mdspan"]
+	path = 3rd_party/mdspan
+	url = https://github.com/kokkos/mdspan
