@@ -1,15 +1,18 @@
 /*
  BEGIN_JUCE_MODULE_DECLARATION
 
- ID:            lt_core
- vendor:        lt
- version:       0.1.0
- name:          Core
- description:   JUCE core extensions and utilities.
- dependencies:  juce_core
+  ID:                 lt_core
+  vendor:             LTaudio
+  version:            0.1.0
+  name:               Core
+  description:        JUCE core extensions and utilities.
+  website:            https://github.com/LTaudio/lt_modules
+  license:            Boost Software License 1.0
+  minimumCppStandard: 20
+  dependencies:       juce_core
 
  END_JUCE_MODULE_DECLARATION
- */
+*/
 
 #pragma once
 

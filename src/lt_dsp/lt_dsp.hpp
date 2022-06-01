@@ -1,15 +1,18 @@
 /*
  BEGIN_JUCE_MODULE_DECLARATION
 
- ID:            lt_dsp
- vendor:        lt
- version:       0.1.0
- name:          DSP
- description:   JUCE dsp extensions and utilities.
- dependencies:  juce_audio_processors, juce_dsp, juce_data_structures, lt_core
+  ID:                 lt_dsp
+  vendor:             LTaudio
+  version:            0.1.0
+  name:               DSP
+  description:        JUCE dsp extensions and utilities.
+  website:            https://github.com/LTaudio/lt_modules
+  license:            Boost Software License 1.0
+  minimumCppStandard: 20
+  dependencies:       juce_audio_basics, juce_dsp, lt_core
 
  END_JUCE_MODULE_DECLARATION
- */
+*/
 
 #pragma once
 
@@ -17,8 +20,7 @@
 #define USE_LT_DSP 1
 #endif
 
-#include <juce_audio_processors/juce_audio_processors.h>
-#include <juce_data_structures/juce_data_structures.h>
+#include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_dsp/juce_dsp.h>
 #include <lt_core/lt_core.hpp>
 
