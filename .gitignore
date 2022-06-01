@@ -1,0 +1,11 @@
+.atom
+.idea
+.vscode
+.vs
+
+/resources/samples
+/build
+/cmake-build-*
+
+.DS_Store
+*.pdf
