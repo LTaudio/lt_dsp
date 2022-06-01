@@ -1,9 +1,9 @@
-#include <lt_dsp/lt_dsp.hpp>
+#include <lt_core/lt_core.hpp>
 
 #include "catch2/catch_template_test_macros.hpp"
 #include "catch2/catch_test_macros.hpp"
 
-TEMPLATE_TEST_CASE("dsp/iterator: IndexIterator", "[dsp][iterator]", short, unsigned, int, float, double)
+TEMPLATE_TEST_CASE("core/iterator: IndexIterator", "[core][iterator]", short, unsigned, int, float, double)
 {
     using T         = TestType;
     using Container = std::array<T, 4>;

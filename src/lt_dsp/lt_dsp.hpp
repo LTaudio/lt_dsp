@@ -6,7 +6,7 @@
  version:       0.1.0
  name:          DSP
  description:   JUCE dsp extensions and utilities.
- dependencies:  juce_audio_processors, juce_dsp, juce_data_structures
+ dependencies:  juce_audio_processors, juce_dsp, juce_data_structures, lt_core
 
  END_JUCE_MODULE_DECLARATION
  */
@@ -20,9 +20,8 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_data_structures/juce_data_structures.h>
 #include <juce_dsp/juce_dsp.h>
+#include <lt_core/lt_core.hpp>
 
 // clang-format off
-#include "iterator/IndexIterator.hpp"
-#include "container/CircularBuffer.hpp"
 #include "processor/OverlapAddProcessor.hpp"
 // clang-format on

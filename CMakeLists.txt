@@ -43,53 +43,54 @@ if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14")
 endif ()
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+include(ltCompilerOptions)
+include(ltCompilerWarnings)
+include(ltCodeCoverage)
+
+list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/Catch2/extras")
+enable_testing()
+add_subdirectory(3rd_party/Catch2 EXCLUDE_FROM_ALL)
+include(CTest)
+include(Catch)
+
 add_subdirectory(3rd_party/concurrentqueue)
+add_subdirectory(3rd_party/mdspan)
 add_subdirectory(3rd_party/JUCE)
 
-juce_add_modules(src/lt_dsp ALIAS_NAMESPACE lt)
+add_subdirectory(src)
 
-if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-    list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-    include(ltCompilerOptions)
-    include(ltCompilerWarnings)
-    include(ltCodeCoverage)
+juce_add_console_app(${PROJECT_NAME}_tests PRODUCT_NAME "${PROJECT_NAME}_tests" NEEDS_CURL TRUE)
+catch_discover_tests(${PROJECT_NAME}_tests)
 
-    list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/Catch2/extras")
-    enable_testing()
-    add_subdirectory(3rd_party/Catch2 EXCLUDE_FROM_ALL)
-    include(CTest)
-    include(Catch)
+target_sources(${PROJECT_NAME}_tests
+    PRIVATE
+        "src/Main.test.cpp"
 
-    juce_add_console_app(${PROJECT_NAME}_tests PRODUCT_NAME "${PROJECT_NAME}_tests" NEEDS_CURL TRUE)
-    catch_discover_tests(${PROJECT_NAME}_tests)
+        "src/lt_core/container/CircularBuffer.test.cpp"
+        "src/lt_core/iterator/IndexIterator.test.cpp"
+        "src/lt_dsp/processor/OverlapAddProcessor.test.cpp"
 
-    target_sources(${PROJECT_NAME}_tests
-        PRIVATE
-            "src/Main.test.cpp"
+)
 
-            "src/lt_dsp/container/CircularBuffer.test.cpp"
-            "src/lt_dsp/iterator/IndexIterator.test.cpp"
-            "src/lt_dsp/processor/OverlapAddProcessor.test.cpp"
+target_compile_definitions(${PROJECT_NAME}_tests
+    PRIVATE
+        JUCE_WEB_BROWSER=0
+        JUCE_USE_OGGVORBIS=0
+        JUCE_DISABLE_JUCE_VERSION_PRINTING=1
+)
 
-    )
+target_link_libraries(${PROJECT_NAME}_tests
+    PRIVATE
+        lt::lt_core
+        lt::lt_dsp
+        std::mdspan
+        Catch2::Catch2
+        juce::juce_recommended_config_flags
+        juce::juce_recommended_warning_flags
+        juce::juce_recommended_lto_flags
+        lt::CompilerWarnings
+        lt::CompilerOptions
+        lt::CodeCoverage
+)
 
-    target_compile_definitions(${PROJECT_NAME}_tests
-        PRIVATE
-            JUCE_WEB_BROWSER=0
-            JUCE_USE_OGGVORBIS=0
-            JUCE_DISABLE_JUCE_VERSION_PRINTING=1
-    )
-
-    target_link_libraries(${PROJECT_NAME}_tests
-        PRIVATE
-            lt::lt_dsp
-            Catch2::Catch2
-            juce::juce_recommended_config_flags
-            juce::juce_recommended_warning_flags
-            juce::juce_recommended_lto_flags
-            lt::CompilerWarnings
-            lt::CompilerOptions
-            lt::CodeCoverage
-    )
-
-endif()
