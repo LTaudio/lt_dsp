@@ -3,9 +3,18 @@
 namespace lt
 {
 
-template<typename ProcessorType>
+/// \brief Wraps any type of processor and calls its process
+/// function in fixed size blocks with a specified overlap.
+///
+/// \details Useful for FFT-based effects that require a constant
+/// window size, often much larger than the audio interface block
+/// size used by the system. The latency is equal to the hop size.
+template<typename FloatType, typename ProcessorType>
 struct OverlapAddProcessor
 {
+    using value_type     = FloatType;
+    using processor_type = ProcessorType;
+
     OverlapAddProcessor(std::uint32_t blockSize, std::uint32_t hopSize);
 
     auto prepare(juce::dsp::ProcessSpec const& spec) -> void;
@@ -29,8 +38,8 @@ private:
     std::uint32_t _samplesSinceLastHop{0};
 };
 
-template<typename ProcessorType>
-OverlapAddProcessor<ProcessorType>::OverlapAddProcessor(std::uint32_t blockSize, std::uint32_t hopSize)
+template<typename FloatType, typename ProcessorType>
+OverlapAddProcessor<FloatType, ProcessorType>::OverlapAddProcessor(std::uint32_t blockSize, std::uint32_t hopSize)
     : _inputBuffer{blockSize, 0.0f}
     , _outputBuffer{blockSize, 0.0f}
     , _processBuffer{1, static_cast<int>(blockSize)}
@@ -40,8 +49,8 @@ OverlapAddProcessor<ProcessorType>::OverlapAddProcessor(std::uint32_t blockSize,
     jassert(hopSize < blockSize);
 }
 
-template<typename ProcessorType>
-auto OverlapAddProcessor<ProcessorType>::prepare(juce::dsp::ProcessSpec const& spec) -> void
+template<typename FloatType, typename ProcessorType>
+auto OverlapAddProcessor<FloatType, ProcessorType>::prepare(juce::dsp::ProcessSpec const& spec) -> void
 {
     // Only mono supported at the moment.
     // TODO(tobi): Multi-channel support
@@ -54,10 +63,12 @@ auto OverlapAddProcessor<ProcessorType>::prepare(juce::dsp::ProcessSpec const& s
     _processBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(_blockSize), false, true);
 }
 
-template<typename ProcessorType>
+template<typename FloatType, typename ProcessorType>
 template<typename ProcessContext>
-auto OverlapAddProcessor<ProcessorType>::process(ProcessContext const& context) -> void
+auto OverlapAddProcessor<FloatType, ProcessorType>::process(ProcessContext const& context) -> void
 {
+    static_assert(std::is_same_v<FloatType, typename ProcessContext::SampleType>);
+
     auto&& inBlock  = context.getInputBlock();
     auto&& outBlock = context.getOutputBlock();
 
@@ -74,14 +85,14 @@ auto OverlapAddProcessor<ProcessorType>::process(ProcessContext const& context) 
     std::copy(processed, std::next(processed, numSamples), outBlock.getChannelPointer(0));
 }
 
-template<typename ProcessorType>
-auto OverlapAddProcessor<ProcessorType>::reset() -> void
+template<typename FloatType, typename ProcessorType>
+auto OverlapAddProcessor<FloatType, ProcessorType>::reset() -> void
 {
     _processor.reset();
 }
 
-template<typename ProcessorType>
-auto OverlapAddProcessor<ProcessorType>::processSample(float sample) -> void
+template<typename FloatType, typename ProcessorType>
+auto OverlapAddProcessor<FloatType, ProcessorType>::processSample(float sample) -> void
 {
     _inputBuffer.push_back(sample);
     if (++_samplesSinceLastHop == _hopSize)

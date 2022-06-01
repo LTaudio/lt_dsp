@@ -1,5 +1,6 @@
 #include <lt_dsp/lt_dsp.hpp>
 
+#include "catch2/catch_template_test_macros.hpp"
 #include "catch2/catch_test_macros.hpp"
 
 struct TestProcessor
@@ -37,19 +38,22 @@ struct TestProcessor
     juce::dsp::ProcessSpec spec{};
 };
 
-TEST_CASE("dsp/processor: OverlapAddProcessor", "[dsp][processor]")
+TEMPLATE_TEST_CASE("dsp/processor: OverlapAddProcessor", "[dsp][processor]", float, double)
 {
-
     static constexpr auto const windowSize     = 8U;
     static constexpr auto const hopSize        = 2U;
     static constexpr auto const audioBlockSize = 6U;
 
-    auto proc    = lt::OverlapAddProcessor<TestProcessor>{windowSize, hopSize};
-    auto samples = std::array<float, 12>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    auto buffer  = juce::AudioBuffer<float>{1, std::size(samples)};
+    auto proc = lt::OverlapAddProcessor<TestType, TestProcessor>{windowSize, hopSize};
+
+    STATIC_REQUIRE(std::is_same_v<typename decltype(proc)::value_type, TestType>);
+    STATIC_REQUIRE(std::is_same_v<typename decltype(proc)::processor_type, TestProcessor>);
+
+    auto samples = std::array<TestType, 12>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    auto buffer  = juce::AudioBuffer<TestType>{1, std::size(samples)};
     std::copy(std::cbegin(samples), std::cend(samples), buffer.getWritePointer(0));
 
-    auto block = juce::dsp::AudioBlock<float>{buffer};
+    auto block = juce::dsp::AudioBlock<TestType>{buffer};
 
     for (auto i{0U}; i < samples.size(); i += audioBlockSize)
     {
@@ -57,6 +61,4 @@ TEST_CASE("dsp/processor: OverlapAddProcessor", "[dsp][processor]")
         auto ctx      = juce::dsp::ProcessContextReplacing{subBlock};
         proc.process(ctx);
     }
-
-    SUCCEED();
 }
