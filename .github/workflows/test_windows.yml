@@ -29,7 +29,7 @@ jobs:
       - name: CTest -- Release
         run: ctest --test-dir cmake-build-release -C Release
 
-  windows-msvc:
+  windows-clangcl:
     name: Windows ClangCL
     runs-on: windows-2019
     steps:
@@ -50,5 +50,3 @@ jobs:
 
       - name: CTest -- Release
         run: ctest --test-dir cmake-build-release -C Release
-
-
