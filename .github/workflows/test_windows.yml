@@ -1,0 +1,54 @@
+name: Windows
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  windows-msvc:
+    name: Windows MSVC
+    runs-on: windows-2019
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+          lfs: true
+
+      - name: Checkout LFS objects
+        run: git lfs checkout
+
+      - name: CMake -- Release
+        shell: cmd
+        run: |
+          cmake -S . -B cmake-build-release -G "Visual Studio 16 2019" -D CMAKE_BUILD_TYPE=Release
+          cmake --build cmake-build-release --config Release
+
+      - name: CTest -- Release
+        run: ctest --test-dir cmake-build-release -C Release
+
+  windows-msvc:
+    name: Windows ClangCL
+    runs-on: windows-2019
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+          lfs: true
+
+      - name: Checkout LFS objects
+        run: git lfs checkout
+
+      - name: CMake -- Release
+        shell: cmd
+        run: |
+          cmake -S . -B cmake-build-release -G "Visual Studio 16 2019" -T ClangCL -D CMAKE_BUILD_TYPE=Release
+          cmake --build cmake-build-release --config Release
+
+      - name: CTest -- Release
+        run: ctest --test-dir cmake-build-release -C Release
+
+
