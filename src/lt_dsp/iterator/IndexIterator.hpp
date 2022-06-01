@@ -141,14 +141,14 @@ template<typename Container, bool IsConst>
 auto operator-(IndexIterator<Container, IsConst> it, typename IndexIterator<Container, IsConst>::difference_type n)
     -> IndexIterator<Container, IsConst>
 {
-    return {it.container(), static_cast<typename IndexIterator<Container, IsConst>::index_type>(it.index() - n)};
+    return {it.container(), it.index() - static_cast<typename IndexIterator<Container, IsConst>::index_type>(n)};
 };
 
 template<typename Container, bool IsConst>
 auto operator+(IndexIterator<Container, IsConst> it, typename IndexIterator<Container, IsConst>::difference_type n)
     -> IndexIterator<Container, IsConst>
 {
-    return {it.container(), static_cast<typename IndexIterator<Container, IsConst>::index_type>(it.index() + n)};
+    return {it.container(), it.index() + static_cast<typename IndexIterator<Container, IsConst>::index_type>(n)};
 };
 
 template<typename Container, bool IsConst>
@@ -164,7 +164,7 @@ template<typename Container, bool IsConst>
 auto operator+=(IndexIterator<Container, IsConst>& it, typename IndexIterator<Container, IsConst>::difference_type n)
     -> IndexIterator<Container, IsConst>&
 {
-    auto tmp = it - n;
+    auto tmp = it + n;
     it       = tmp;
     return it;
 };
