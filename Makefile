@@ -15,6 +15,14 @@ tidy-check:
 tidy-fix:
 	${CLANG_TIDY_ARGS} -fix -quiet -p $(BUILD_DIR) -header-filter $(shell realpath ./src) $(shell realpath ./src)
 
+.PHONY: docs
+docs:
+	doxygen ./docs/Doxyfile
+
+.PHONY: docs-pdf
+docs-pdf: docs
+	make -C cmake-build-doxygen/latex pdf
+	cp cmake-build-doxygen/latex/refman.pdf "cmake-build-doxygen/Electrickick Developer Manual.pdf"
 
 .PHONY: coverage
 coverage:
