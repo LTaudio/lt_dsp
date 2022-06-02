@@ -10,3 +10,9 @@
 [submodule "3rd_party/mdspan"]
 	path = 3rd_party/mdspan
 	url = https://github.com/kokkos/mdspan
+[submodule "3rd_party/benchmark"]
+	path = 3rd_party/benchmark
+	url = https://github.com/google/benchmark
+[submodule "3rd_party/pffft"]
+	path = 3rd_party/pffft
+	url = https://github.com/marton78/pffft

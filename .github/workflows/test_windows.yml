@@ -23,7 +23,7 @@ jobs:
       - name: CMake -- Release
         shell: cmd
         run: |
-          cmake -S . -B cmake-build-release -G "Visual Studio 16 2019" -D CMAKE_BUILD_TYPE=Release
+          cmake -S . -B cmake-build-release -G "Visual Studio 16 2019" -D CMAKE_BUILD_TYPE=Release -DLT_BUILD_BENCHMARK=OFF
           cmake --build cmake-build-release --config Release
 
       - name: CTest -- Release
