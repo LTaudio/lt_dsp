@@ -13,6 +13,3 @@
 [submodule "3rd_party/benchmark"]
 	path = 3rd_party/benchmark
 	url = https://github.com/google/benchmark
-[submodule "3rd_party/pffft"]
-	path = 3rd_party/pffft
-	url = https://github.com/marton78/pffft
