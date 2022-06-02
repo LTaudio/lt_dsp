@@ -49,7 +49,7 @@
   SSE2 64bit support macros
 */
 #if !defined(SIMD_SZ) && !defined(PFFFT_SIMD_DISABLE) && (defined( __SSE4_2__ ) |  defined( __SSE4_1__ ) || defined( __SSE3__ ) || defined( __SSE2__ ) || defined ( __x86_64__ ) || defined( _M_AMD64 ) || defined( _M_X64 ) || defined( __amd64 ))
-#pragma message (__FILE__ ": SSE2 double macros are defined" )
+// #pragma message (__FILE__ ": SSE2 double macros are defined" )
 
 #include <emmintrin.h>
 

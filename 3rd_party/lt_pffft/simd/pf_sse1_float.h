@@ -37,7 +37,7 @@
   SSE1 support macros
 */
 #if !defined(SIMD_SZ) && !defined(PFFFT_SIMD_DISABLE) && (defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(i386) || defined(_M_IX86))
-#pragma message( __FILE__ ": SSE1 float macros are defined" )
+// #pragma message( __FILE__ ": SSE1 float macros are defined" )
 
 #include <xmmintrin.h>
 typedef __m128 v4sf;
