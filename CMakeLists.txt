@@ -103,7 +103,6 @@ if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
             Catch2::Catch2WithMain
             juce::juce_recommended_config_flags
             juce::juce_recommended_warning_flags
-            lt::CompilerWarnings
             lt::CompilerOptions
             lt::CodeCoverage
     )

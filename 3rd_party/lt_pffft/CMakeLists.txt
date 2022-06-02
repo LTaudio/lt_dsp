@@ -3,9 +3,15 @@ project(lt_pffft)
 add_library(${PROJECT_NAME})
 add_library(lt::lt_pffft ALIAS ${PROJECT_NAME})
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES=1)
-target_compile_definitions(${PROJECT_NAME} PUBLIC PFFFT_ENABLE_DOUBLE=1 PFFFT_ENABLE_FLOAT=1)
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
+target_link_libraries(${PROJECT_NAME} PUBLIC lt::CompilerOptions)
+
+target_compile_definitions(${PROJECT_NAME}
+    PUBLIC
+        _USE_MATH_DEFINES=1
+        PFFFT_ENABLE_DOUBLE=1
+        PFFFT_ENABLE_FLOAT=1
+)
 
 target_sources(${PROJECT_NAME}
     PRIVATE
