@@ -40,6 +40,25 @@ struct TestProcessor
     int invocations{0};
     juce::dsp::ProcessSpec spec{};
 };
+struct PassthroughProcessor
+{
+    auto prepare(juce::dsp::ProcessSpec const& s) -> void { (void)s; }
+
+    template<typename ProcessContext>
+    auto process(ProcessContext const& context) -> void
+    {
+        auto&& inBlock  = context.getInputBlock();
+        auto&& outBlock = context.getOutputBlock();
+
+        REQUIRE(inBlock.getNumChannels() == outBlock.getNumChannels());
+        REQUIRE(inBlock.getNumSamples() == outBlock.getNumSamples());
+
+        // std::cout << "passthrough: " << inBlock << '\n';
+        if (ProcessContext::usesSeparateInputAndOutputBlocks()) { outBlock.copyFrom(inBlock); }
+    }
+
+    auto reset() -> void {}
+};
 
 TEMPLATE_TEST_CASE("dsp/processor: OverlapAddProcessor", "[dsp][processor]", float, double)
 {
@@ -67,5 +86,36 @@ TEMPLATE_TEST_CASE("dsp/processor: OverlapAddProcessor", "[dsp][processor]", flo
         auto subBlock = block.getSubBlock(i, audioBlockSize);
         auto ctx      = juce::dsp::ProcessContextReplacing{subBlock};
         proc.process(ctx);
+    }
+}
+
+TEMPLATE_TEST_CASE("dsp/processor: OverlapAddProcessor - overlap", "[dsp][processor]", float, double)
+{
+    static constexpr auto const windowSize     = 16U;
+    static constexpr auto const hopSize        = 8U;
+    static constexpr auto const audioBlockSize = 8U;
+    static constexpr auto const numChannels    = 1U;
+
+    auto proc    = lt::OverlapAddProcessor<TestType, PassthroughProcessor>{windowSize, hopSize};
+    auto samples = std::array<TestType, 32>{};
+    std::fill(std::begin(samples), std::end(samples), TestType{1});
+
+    auto buffer = juce::AudioBuffer<TestType>{int(numChannels), lt::signCast<int>(std::size(samples))};
+    std::copy(std::cbegin(samples), std::cend(samples), buffer.getWritePointer(0));
+
+    auto block = juce::dsp::AudioBlock<TestType>{buffer};
+    proc.prepare(juce::dsp::ProcessSpec{44100.0, audioBlockSize, numChannels});
+
+    for (auto i{0U}; i < samples.size(); i += audioBlockSize)
+    {
+        auto subBlock = block.getSubBlock(i, audioBlockSize);
+        auto ctx      = juce::dsp::ProcessContextReplacing{subBlock};
+        // std::cout << "process inp: " << subBlock << '\n';
+        proc.process(ctx);
+        // std::cout << "process out: " << subBlock << '\n' << '\n';
+
+        auto f = subBlock.getChannelPointer(0);
+        auto l = std::next(f, lt::signCast<long>(subBlock.getNumSamples()));
+        REQUIRE(std::all_of(f, l, [](auto s) { return (s == TestType{0}) || (s == TestType{1}); }));
     }
 }

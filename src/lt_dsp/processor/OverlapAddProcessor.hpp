@@ -1,5 +1,20 @@
 #pragma once
 
+template<typename T>
+auto operator<<(std::ostream& out, juce::dsp::AudioBlock<T> block) -> std::ostream&
+{
+    if (block.getNumSamples() == 0 || block.getNumChannels() == 0) { return out << "AudioBlock{}"; }
+
+    auto const samples    = block.getChannelPointer(0);
+    auto const numSamples = block.getNumSamples();
+
+    out << "AudioBlock{ " << samples[0];
+    for (auto i{1U}; i < numSamples; ++i) { out << ", " << samples[i]; }
+    out << " }";
+
+    return out;
+}
+
 namespace lt
 {
 
@@ -134,10 +149,18 @@ auto OverlapAddProcessor<FloatType, ProcessorType>::processWrapped() -> void
     auto ctx   = juce::dsp::ProcessContextReplacing<value_type>(block);
     _processor.process(ctx);
 
+    auto const gain = static_cast<value_type>(_hopSize) / static_cast<value_type>(_blockSize);
+    block.multiplyBy(gain);
+
     for (auto ch{0U}; ch < std::size(_outputBuffers); ++ch)
     {
-        auto const* processed = _processBuffer.getReadPointer(signCast<int>(ch));
-        std::copy(processed, processed + _processBuffer.getNumSamples(), std::back_inserter(_outputBuffers[ch]));
+        auto& out = _outputBuffers[ch];
+
+        auto const* pFirst   = _processBuffer.getReadPointer(signCast<int>(ch));
+        auto const* pLast    = pFirst + _processBuffer.getNumSamples();
+        auto const pFirstNew = std::prev(pLast, _hopSize);
+        std::copy(pFirstNew, pLast, std::back_inserter(out));
+        std::transform(pFirst, pFirstNew, std::begin(out), std::begin(out), std::plus<>{});
     }
 }
 
