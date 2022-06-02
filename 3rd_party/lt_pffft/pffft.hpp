@@ -57,16 +57,16 @@ template<typename T> struct Types {};
 #if defined(PFFFT_ENABLE_FLOAT) || ( !defined(PFFFT_ENABLE_FLOAT) && !defined(PFFFT_ENABLE_DOUBLE) )
 template<> struct Types<float>  {
   typedef float  Scalar;
-  typedef std::complex<Scalar> Complex;
+  typedef ::std::complex<Scalar> Complex;
   static int simd_size() { return detail::pffft_simd_size(); }
   static const char * simd_arch() { return detail::pffft_simd_arch(); }
   static int minFFtsize() { return pffft_min_fft_size(detail::PFFFT_REAL); }
   static bool isValidSize(int N) { return pffft_is_valid_size(N, detail::PFFFT_REAL); }
   static int nearestTransformSize(int N, bool higher) { return pffft_nearest_transform_size(N, detail::PFFFT_REAL, higher ? 1 : 0); }
 };
-template<> struct Types< std::complex<float> >  {
+template<> struct Types< ::std::complex<float> >  {
   typedef float  Scalar;
-  typedef std::complex<float>  Complex;
+  typedef ::std::complex<float>  Complex;
   static int simd_size() { return detail::pffft_simd_size(); }
   static const char * simd_arch() { return detail::pffft_simd_arch(); }
   static int minFFtsize() { return pffft_min_fft_size(detail::PFFFT_COMPLEX); }
@@ -77,16 +77,16 @@ template<> struct Types< std::complex<float> >  {
 #if defined(PFFFT_ENABLE_DOUBLE)
 template<> struct Types<double> {
   typedef double Scalar;
-  typedef std::complex<Scalar> Complex;
+  typedef ::std::complex<Scalar> Complex;
   static int simd_size() { return detail::pffftd_simd_size(); }
   static const char * simd_arch() { return detail::pffftd_simd_arch(); }
   static int minFFtsize() { return pffftd_min_fft_size(detail::PFFFT_REAL); }
   static bool isValidSize(int N) { return pffftd_is_valid_size(N, detail::PFFFT_REAL); }
   static int nearestTransformSize(int N, bool higher) { return pffftd_nearest_transform_size(N, detail::PFFFT_REAL, higher ? 1 : 0); }
 };
-template<> struct Types< std::complex<double> > {
+template<> struct Types< ::std::complex<double> > {
   typedef double Scalar;
-  typedef std::complex<double> Complex;
+  typedef ::std::complex<double> Complex;
   static int simd_size() { return detail::pffftd_simd_size(); }
   static const char * simd_arch() { return detail::pffftd_simd_arch(); }
   static int minFFtsize() { return pffftd_min_fft_size(detail::PFFFT_COMPLEX); }
@@ -120,8 +120,8 @@ struct AlignedVector : public std::vector< T, PFAlloc<T> > {
 #endif
 
 
-// T can be float, double, std::complex<float> or std::complex<double>
-//   define PFFFT_ENABLE_DOUBLE before include this file for double and std::complex<double>
+// T can be float, double, ::std::complex<float> or ::std::complex<double>
+//   define PFFFT_ENABLE_DOUBLE before include this file for double and ::std::complex<double>
 template<typename T>
 class Fft
 {
@@ -492,12 +492,12 @@ public:
 
 
 template<>
-class Setup< std::complex<float> >
+class Setup< ::std::complex<float> >
 {
   PFFFT_Setup* self;
 
 public:
-  typedef std::complex<float> value_type;
+  typedef ::std::complex<float> value_type;
   typedef Types< value_type >::Scalar Scalar;
 
   Setup()
@@ -618,12 +618,12 @@ public:
 };
 
 template<>
-class Setup< std::complex<double> >
+class Setup< ::std::complex<double> >
 {
   PFFFTD_Setup* self;
 
 public:
-  typedef std::complex<double> value_type;
+  typedef ::std::complex<double> value_type;
   typedef Types< value_type >::Scalar Scalar;
 
   Setup()
@@ -692,9 +692,9 @@ inline Fft<T>::Fft(int length, int stackThresholdLen)
   , stackThresholdLen(stackThresholdLen)
 {
 #if (__cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER >= 1900))
-  static_assert( sizeof(Complex) == 2 * sizeof(Scalar), "pffft requires sizeof(std::complex<>) == 2 * sizeof(Scalar)" );
+  static_assert( sizeof(Complex) == 2 * sizeof(Scalar), "pffft requires sizeof(::std::complex<>) == 2 * sizeof(Scalar)" );
 #elif defined(__GNUC__)
-  char static_assert_like[(sizeof(Complex) == 2 * sizeof(Scalar)) ? 1 : -1]; // pffft requires sizeof(std::complex<>) == 2 * sizeof(Scalar)
+  char static_assert_like[(sizeof(Complex) == 2 * sizeof(Scalar)) ? 1 : -1]; // pffft requires sizeof(::std::complex<>) == 2 * sizeof(Scalar)
 #endif
   prepareLength(length);
 }
