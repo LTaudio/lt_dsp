@@ -23,6 +23,7 @@
 #include <juce_core/juce_core.h>
 
 // clang-format off
+#include "types/Cast.hpp"
 #include "iterator/IndexIterator.hpp"
 #include "container/CircularBuffer.hpp"
 // clang-format on

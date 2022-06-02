@@ -24,14 +24,18 @@ struct OverlapAddProcessor
 
     auto reset() -> void;
 
+    [[nodiscard]] auto processor() noexcept -> ProcessorType&;
+    [[nodiscard]] auto processor() const noexcept -> ProcessorType const&;
+
 private:
-    auto processSample(float sample) -> void;
+    auto processSample(std::uint32_t channel, value_type sample) -> void;
+    auto processWrapped() -> void;
 
     ProcessorType _processor;
 
-    CircularBuffer<float> _inputBuffer;
-    CircularBuffer<float> _outputBuffer;
-    juce::AudioBuffer<float> _processBuffer;
+    std::vector<CircularBuffer<value_type>> _inputBuffers{};
+    std::vector<CircularBuffer<value_type>> _outputBuffers{};
+    juce::AudioBuffer<value_type> _processBuffer{};
 
     std::uint32_t _blockSize;
     std::uint32_t _hopSize;
@@ -40,11 +44,7 @@ private:
 
 template<typename FloatType, typename ProcessorType>
 OverlapAddProcessor<FloatType, ProcessorType>::OverlapAddProcessor(std::uint32_t blockSize, std::uint32_t hopSize)
-    : _inputBuffer{blockSize, 0.0f}
-    , _outputBuffer{blockSize, 0.0f}
-    , _processBuffer{1, static_cast<int>(blockSize)}
-    , _blockSize{blockSize}
-    , _hopSize{hopSize}
+    : _blockSize{blockSize}, _hopSize{hopSize}
 {
     jassert(hopSize < blockSize);
 }
@@ -52,9 +52,10 @@ OverlapAddProcessor<FloatType, ProcessorType>::OverlapAddProcessor(std::uint32_t
 template<typename FloatType, typename ProcessorType>
 auto OverlapAddProcessor<FloatType, ProcessorType>::prepare(juce::dsp::ProcessSpec const& spec) -> void
 {
-    // Only mono supported at the moment.
-    // TODO(tobi): Multi-channel support
-    jassert(spec.numChannels == 1U);
+    _inputBuffers.resize(spec.numChannels);
+    _outputBuffers.resize(spec.numChannels);
+    for (auto& buffer : _inputBuffers) { buffer.resize(_blockSize); }
+    for (auto& buffer : _outputBuffers) { buffer.resize(_blockSize); }
 
     auto blockSpec             = spec;
     blockSpec.maximumBlockSize = _blockSize;
@@ -69,20 +70,36 @@ auto OverlapAddProcessor<FloatType, ProcessorType>::process(ProcessContext const
 {
     static_assert(std::is_same_v<FloatType, typename ProcessContext::SampleType>);
 
-    auto&& inBlock  = context.getInputBlock();
-    auto&& outBlock = context.getOutputBlock();
+    auto inBlock  = context.getInputBlock();
+    auto outBlock = context.getOutputBlock();
 
-    jassert(inBlock.getNumChannels() == 1U);
     jassert(inBlock.getNumChannels() == outBlock.getNumChannels());
     jassert(inBlock.getNumSamples() == outBlock.getNumSamples());
 
-    auto input      = inBlock.getChannelPointer(0);
-    auto numSamples = static_cast<int>(inBlock.getNumSamples());
+    auto const numSamples  = static_cast<int>(inBlock.getNumSamples());
+    auto const numChannels = inBlock.getNumChannels();
 
-    std::for_each(input, std::next(input, numSamples), [this](auto s) { processSample(s); });
+    for (auto i{0}; i < numSamples; ++i)
+    {
+        for (auto ch{0U}; ch < numChannels; ++ch)
+        {
+            auto sample = inBlock.getSample(static_cast<int>(ch), i);
+            _inputBuffers[ch].push_back(sample);
+        }
 
-    auto const processed = std::cbegin(_outputBuffer);
-    std::copy(processed, std::next(processed, numSamples), outBlock.getChannelPointer(0));
+        if (++_samplesSinceLastHop == _hopSize)
+        {
+            _samplesSinceLastHop = 0;
+            processWrapped();
+        }
+    }
+
+    for (auto ch{0U}; ch < numChannels; ++ch)
+    {
+        auto const processed = std::cbegin(_outputBuffers[ch]);
+        auto* output         = outBlock.getChannelPointer(ch);
+        std::copy(processed, std::next(processed, numSamples), output);
+    }
 }
 
 template<typename FloatType, typename ProcessorType>
@@ -92,21 +109,37 @@ auto OverlapAddProcessor<FloatType, ProcessorType>::reset() -> void
 }
 
 template<typename FloatType, typename ProcessorType>
-auto OverlapAddProcessor<FloatType, ProcessorType>::processSample(float sample) -> void
+auto OverlapAddProcessor<FloatType, ProcessorType>::processor() noexcept -> ProcessorType&
 {
-    _inputBuffer.push_back(sample);
-    if (++_samplesSinceLastHop == _hopSize)
+    return _processor;
+}
+
+template<typename FloatType, typename ProcessorType>
+auto OverlapAddProcessor<FloatType, ProcessorType>::processor() const noexcept -> ProcessorType const&
+{
+    return _processor;
+}
+
+template<typename FloatType, typename ProcessorType>
+auto OverlapAddProcessor<FloatType, ProcessorType>::processWrapped() -> void
+{
+    jassert(std::size(_outputBuffers) == std::size(_inputBuffers));
+
+    for (auto ch{0U}; ch < std::size(_inputBuffers); ++ch)
     {
-        _samplesSinceLastHop = 0;
+        auto const& input = _inputBuffers[ch];
+        std::copy(std::cbegin(input), std::cend(input), _processBuffer.getWritePointer(static_cast<int>(ch)));
+    }
 
-        std::copy(std::cbegin(_inputBuffer), std::cend(_inputBuffer), _processBuffer.getWritePointer(0));
+    auto block = juce::dsp::AudioBlock<value_type>(_processBuffer);
+    auto ctx   = juce::dsp::ProcessContextReplacing<value_type>(block);
+    _processor.process(ctx);
 
-        auto block = juce::dsp::AudioBlock<float>(_processBuffer);
-        auto ctx   = juce::dsp::ProcessContextReplacing<float>(block);
-        _processor.process(ctx);
-
-        auto const* processed = _processBuffer.getReadPointer(0);
-        std::copy(processed, processed + _processBuffer.getNumSamples(), std::back_inserter(_outputBuffer));
+    for (auto ch{0U}; ch < std::size(_outputBuffers); ++ch)
+    {
+        auto const* processed = _processBuffer.getReadPointer(static_cast<int>(ch));
+        std::copy(processed, processed + _processBuffer.getNumSamples(), std::back_inserter(_outputBuffers[ch]));
     }
 }
+
 }  // namespace lt

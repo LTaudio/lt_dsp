@@ -58,7 +58,7 @@ auto CircularBuffer<T>::empty() const noexcept -> bool
 template<typename T>
 auto CircularBuffer<T>::size() const noexcept -> size_type
 {
-    return std::size(_buffer);
+    return narrowCast<size_type>(std::size(_buffer));
 }
 
 template<typename T>
@@ -124,7 +124,6 @@ template<typename T>
 auto CircularBuffer<T>::resize(size_type newSize) -> void
 {
     _buffer.resize(newSize);
-    std::size(_buffer) = newSize;
 }
 
 template<typename T>
