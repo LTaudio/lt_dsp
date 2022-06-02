@@ -61,7 +61,7 @@ auto OverlapAddProcessor<FloatType, ProcessorType>::prepare(juce::dsp::ProcessSp
     blockSpec.maximumBlockSize = _blockSize;
     _processor.prepare(blockSpec);
 
-    _processBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(_blockSize), false, true);
+    _processBuffer.setSize(signCast<int>(spec.numChannels), signCast<int>(_blockSize), false, true);
 }
 
 template<typename FloatType, typename ProcessorType>
@@ -76,14 +76,14 @@ auto OverlapAddProcessor<FloatType, ProcessorType>::process(ProcessContext const
     jassert(inBlock.getNumChannels() == outBlock.getNumChannels());
     jassert(inBlock.getNumSamples() == outBlock.getNumSamples());
 
-    auto const numSamples  = static_cast<int>(inBlock.getNumSamples());
+    auto const numSamples  = signCast<int>(inBlock.getNumSamples());
     auto const numChannels = inBlock.getNumChannels();
 
     for (auto i{0}; i < numSamples; ++i)
     {
         for (auto ch{0U}; ch < numChannels; ++ch)
         {
-            auto sample = inBlock.getSample(static_cast<int>(ch), i);
+            auto sample = inBlock.getSample(signCast<int>(ch), i);
             _inputBuffers[ch].push_back(sample);
         }
 
@@ -128,7 +128,7 @@ auto OverlapAddProcessor<FloatType, ProcessorType>::processWrapped() -> void
     for (auto ch{0U}; ch < std::size(_inputBuffers); ++ch)
     {
         auto const& input = _inputBuffers[ch];
-        std::copy(std::cbegin(input), std::cend(input), _processBuffer.getWritePointer(static_cast<int>(ch)));
+        std::copy(std::cbegin(input), std::cend(input), _processBuffer.getWritePointer(signCast<int>(ch)));
     }
 
     auto block = juce::dsp::AudioBlock<value_type>(_processBuffer);
@@ -137,7 +137,7 @@ auto OverlapAddProcessor<FloatType, ProcessorType>::processWrapped() -> void
 
     for (auto ch{0U}; ch < std::size(_outputBuffers); ++ch)
     {
-        auto const* processed = _processBuffer.getReadPointer(static_cast<int>(ch));
+        auto const* processed = _processBuffer.getReadPointer(signCast<int>(ch));
         std::copy(processed, processed + _processBuffer.getNumSamples(), std::back_inserter(_outputBuffers[ch]));
     }
 }

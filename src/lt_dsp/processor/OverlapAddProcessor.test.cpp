@@ -54,7 +54,7 @@ TEMPLATE_TEST_CASE("dsp/processor: OverlapAddProcessor", "[dsp][processor]", flo
     STATIC_REQUIRE(std::is_same_v<typename decltype(proc)::processor_type, TestProcessor>);
 
     auto samples = std::array<TestType, 12>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    auto buffer  = juce::AudioBuffer<TestType>{2, static_cast<int>(std::size(samples))};
+    auto buffer  = juce::AudioBuffer<TestType>{2, lt::signCast<int>(std::size(samples))};
     std::copy(std::cbegin(samples), std::cend(samples), buffer.getWritePointer(0));
     std::copy(std::cbegin(samples), std::cend(samples), buffer.getWritePointer(1));
 
