@@ -3,17 +3,6 @@
 namespace lt
 {
 
-namespace detail
-{
-auto circularBufferAtUnsafe(auto* ptr, auto size, auto writeIndex, auto readIndex) -> decltype(ptr[0])
-{
-    auto i = writeIndex + readIndex;
-    if (i >= size) { return ptr[i - size]; }
-    return ptr[i];
-}
-
-}  // namespace detail
-
 template<typename T>
 struct CircularBuffer
 {
@@ -46,31 +35,30 @@ struct CircularBuffer
     [[nodiscard]] auto operator[](size_type index) const -> const_reference;
 
     auto push_back(const_reference val) -> void;
+    auto resize(size_type newSize) -> void;
+    auto clear() -> void;
 
 private:
-    std::unique_ptr<value_type[]> _buffer{};
-    size_type _size{0};
+    std::vector<value_type> _buffer{};
     size_type _writeIndex{0};
 };
 
 template<typename T>
-CircularBuffer<T>::CircularBuffer(size_type size, value_type val)
-    : _buffer{std::make_unique<value_type[]>(size)}, _size{size}
+CircularBuffer<T>::CircularBuffer(size_type size, value_type val) : _buffer(size, val)
 {
-    auto* f = _buffer.get();
-    std::fill(f, std::next(f, _size), val);
+    jassert(std::size(_buffer) == size);
 }
 
 template<typename T>
 auto CircularBuffer<T>::empty() const noexcept -> bool
 {
-    return _size == 0U;
+    return std::empty(_buffer);
 }
 
 template<typename T>
 auto CircularBuffer<T>::size() const noexcept -> size_type
 {
-    return _size;
+    return std::size(_buffer);
 }
 
 template<typename T>
@@ -118,13 +106,32 @@ template<typename T>
 auto CircularBuffer<T>::operator[](size_type index) -> reference
 {
     jassert(index < size());
-    return detail::circularBufferAtUnsafe(_buffer.get(), size(), _writeIndex, index);
+    auto const i = _writeIndex + index;
+    if (i >= size()) { return _buffer[i - size()]; }
+    return _buffer[i];
 }
 
 template<typename T>
 auto CircularBuffer<T>::operator[](size_type index) const -> const_reference
 {
     jassert(index < size());
-    return detail::circularBufferAtUnsafe(_buffer.get(), size(), _writeIndex, index);
+    auto const i = _writeIndex + index;
+    if (i >= size()) { return _buffer[i - size()]; }
+    return _buffer[i];
 }
+
+template<typename T>
+auto CircularBuffer<T>::resize(size_type newSize) -> void
+{
+    _buffer.resize(newSize);
+    std::size(_buffer) = newSize;
+}
+
+template<typename T>
+auto CircularBuffer<T>::clear() -> void
+{
+    _buffer.clear();
+    _writeIndex = 0;
+}
+
 }  // namespace lt
