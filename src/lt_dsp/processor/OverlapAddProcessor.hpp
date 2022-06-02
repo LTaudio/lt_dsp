@@ -28,7 +28,6 @@ struct OverlapAddProcessor
     [[nodiscard]] auto processor() const noexcept -> ProcessorType const&;
 
 private:
-    auto processSample(std::uint32_t channel, value_type sample) -> void;
     auto processWrapped() -> void;
 
     ProcessorType _processor;
