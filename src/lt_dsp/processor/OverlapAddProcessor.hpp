@@ -93,26 +93,35 @@ auto OverlapAddProcessor<FloatType, ProcessorType>::process(ProcessContext const
     auto const numSamples  = signCast<int>(inBlock.getNumSamples());
     auto const numChannels = inBlock.getNumChannels();
 
-    for (auto i{0}; i < numSamples; ++i)
+    auto numSamplesProcessed = 0;
+
+    while (numSamplesProcessed < numSamples)
     {
+        auto const numSamplesLeftInInput  = numSamples - numSamplesProcessed;
+        auto const numSamplesUntilNextHop = signCast<int>(_hopSize - _samplesSinceLastHop);
+        auto const numSamplesToProcess    = std::min(numSamplesLeftInInput, numSamplesUntilNextHop);
+
         for (auto ch{0U}; ch < numChannels; ++ch)
         {
-            auto sample = inBlock.getSample(signCast<int>(ch), i);
-            _inputBuffers[ch].push_back(sample);
+            // Copy input buffer to queue
+            auto inF = std::next(inBlock.getChannelPointer(ch), numSamplesProcessed);
+            auto inL = std::next(inF, numSamplesToProcess);
+            std::copy(inF, inL, std::back_inserter(_inputBuffers[ch]));
+
+            // Copy output buffer from queue
+            auto outF = std::begin(_outputBuffers[ch]);
+            auto outL = std::next(outF, numSamplesToProcess);
+            std::copy(outF, outL, std::next(outBlock.getChannelPointer(ch), numSamplesProcessed));
         }
 
-        if (++_samplesSinceLastHop == _hopSize)
+        numSamplesProcessed += numSamplesToProcess;
+        _samplesSinceLastHop += signCast<std::uint32_t>(numSamplesToProcess);
+
+        if (_samplesSinceLastHop == _hopSize)
         {
             _samplesSinceLastHop = 0;
             processWrapped();
         }
-    }
-
-    for (auto ch{0U}; ch < numChannels; ++ch)
-    {
-        auto const processed = std::cbegin(_outputBuffers[ch]);
-        auto* output         = outBlock.getChannelPointer(ch);
-        std::copy(processed, std::next(processed, numSamples), output);
     }
 }
 
