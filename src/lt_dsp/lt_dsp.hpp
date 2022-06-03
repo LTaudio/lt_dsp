@@ -25,5 +25,6 @@
 #include <lt_core/lt_core.hpp>
 
 // clang-format off
+#include "fft/FourierBin.hpp"
 #include "processor/OverlapAddProcessor.hpp"
 // clang-format on
