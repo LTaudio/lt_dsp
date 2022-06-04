@@ -3,7 +3,7 @@
 namespace lt
 {
 
-#if not(__cpp_lib_span)
+#if defined(__cpp_lib_span)
 inline constexpr auto DynamicExtent = std::dynamic_extent;
 
 template<typename T, std::size_t Extent = DynamicExtent>

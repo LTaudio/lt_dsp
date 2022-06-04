@@ -22,7 +22,7 @@
 
 #include <version>
 
-#if not(__cpp_lib_span)
+#if defined(__cpp_lib_span)
 #include <span>
 #else
 #include "tcbspan/span.hpp"
