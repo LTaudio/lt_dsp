@@ -20,10 +20,19 @@
 #define USE_LT_CORE 1
 #endif
 
+#include <version>
+
+#if not(__cpp_lib_span)
+#include <span>
+#else
+#include "tcbspan/span.hpp"
+#endif
+
 #include <juce_core/juce_core.h>
 
 // clang-format off
 #include "types/Cast.hpp"
 #include "iterator/IndexIterator.hpp"
+#include "container/Span.hpp"
 #include "container/CircularBuffer.hpp"
 // clang-format on

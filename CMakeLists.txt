@@ -53,13 +53,14 @@ endif ()
 
 add_subdirectory(3rd_party/concurrentqueue EXCLUDE_FROM_ALL)
 add_subdirectory(3rd_party/mdspan EXCLUDE_FROM_ALL)
+add_subdirectory(3rd_party/span EXCLUDE_FROM_ALL)
 add_subdirectory(3rd_party/JUCE EXCLUDE_FROM_ALL)
 add_subdirectory(3rd_party/lt_pffft)
 
 add_library(lt_external INTERFACE)
 add_library(lt::lt_external ALIAS lt_external)
 target_compile_definitions(lt_external INTERFACE )
-target_link_libraries(lt_external INTERFACE std::mdspan lt::lt_pffft)
+target_link_libraries(lt_external INTERFACE std::mdspan lt::lt_pffft lt::lt_span)
 
 juce_add_modules(src/lt_core ALIAS_NAMESPACE lt)
 juce_add_modules(src/lt_dsp ALIAS_NAMESPACE lt)
@@ -82,6 +83,7 @@ if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     target_sources(${PROJECT_NAME}_tests
         PRIVATE
             "src/lt_core/container/CircularBuffer.test.cpp"
+            "src/lt_core/container/Span.test.cpp"
             "src/lt_core/iterator/IndexIterator.test.cpp"
             "src/lt_dsp/processor/OverlapAddProcessor.test.cpp"
 
